@@ -1,5 +1,9 @@
 *.cfg
 *__pycache__
+*.json
+*.env
+*.ipynb
+*__init__.py
 
 /Lib
 /Scripts
