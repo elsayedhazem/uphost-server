@@ -11,6 +11,8 @@ APIFY_TOKEN = os.getenv('APIFY_TOKEN')
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 
+print(APIFY_BASE_URL, APIFY_TOKEN)
+
 app = FastAPI()
 
 

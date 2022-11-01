@@ -79,20 +79,23 @@ class ScrapeManager():
         return self.__db["Listings"].insert_one(listing_doc).inserted_id
 
     def __extract_listing_features(self, listing):
-        listingFeatures = {}
+        listing_features = {}
 
-        calendar = listing["calendar"]
-        listingFeatures["pricing"] = {
-            "checkIn": calendar[0]["date"],
-            "checkOut": calendar[1]["date"],
-            "totalPrice": listing["pricing"]["totalPrice"]
-        }
-
+        calendar = listing.get("calendar", None)
+        if calendar:
+            listing_features["pricing"] = {
+                "checkIn": calendar[0]["date"],
+                "checkOut": calendar[1]["date"],
+                "totalPrice": listing["pricing"]["totalPrice"]
+            }
+        else:
+            listing_features["pricing"] = None
+        
         amenities = listing.get("listingAmenities", None)
         if amenities:
             amenities = [a["name"] for a in amenities]
 
-        listingFeatures["amenities"] = amenities
+        listing_features["amenities"] = amenities
 
         same_as_scraped_features = ["numberOfGuests", "name", "roomType", "calendar", "location", "isNew", "stars", "occupancyPercentage",
                                     "guestControls", "isHostedBySuperHost", "bathroomLabel", "bedLabel", "bedroomLabel", "minNights", "maxNights"]
@@ -100,14 +103,14 @@ class ScrapeManager():
         for feature in same_as_scraped_features:
             value = listing.get(feature, None)
             if not value:
-                listingFeatures[feature] = None
+                listing_features[feature] = None
 
-            listingFeatures[feature] = value
+            listing_features[feature] = value
 
-        listingFeatures["hostTotalListingsCount"]: listing["primaryHost"].get(
+        listing_features["hostTotalListingsCount"]: listing["primaryHost"].get(
             "totalListingsCount", 1)
 
-        return listingFeatures
+        return listing_features
 
     def __process_listing(self, listing):
 
@@ -116,8 +119,9 @@ class ScrapeManager():
 
         listing_features = self.__extract_listing_features(listing)
         timestamp = self.finished_at
-
-        self.__db["Listings"].find_one_and_update(
-            {"_id": listing["id"]},
-            {'$set': {f"features.{timestamp}": listing_features}}
-        )
+        
+        if listing_features["pricing"]:
+            self.__db["Listings"].find_one_and_update(
+                {"_id": listing["id"]},
+                {'$set': {f"features.{timestamp}": listing_features}}
+            )

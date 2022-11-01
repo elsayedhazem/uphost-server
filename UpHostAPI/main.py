@@ -1,15 +1,8 @@
-from datetime import datetime
 from fastapi import Request, BackgroundTasks
 from config import app, APIFY_BASE_URL, APIFY_TOKEN
 from Models import ScrapeParamsModel
 from ScrapeManager import ScrapeManager
 import requests
-import os
-
-
-APIFY_BASE_URL = "https://api.apify.com/v2"
-
-APIFY_TOKEN = os.environ.get('APIFY_TOKEN')
 
 scrape_check_in = None
 scrape_check_out = None
@@ -29,8 +22,6 @@ async def run_scrape(scrape_params: ScrapeParamsModel):
         apify_actor_url, json=scrape_params_dict, params=params).json()
 
     run_id = response['data']['id']
-    scrape_check_in = scrape_params_dict['checkIn']
-    scrape_check_out = scrape_params_dict['checkOut']
 
     return {
         "runId": run_id
