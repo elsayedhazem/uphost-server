@@ -1,7 +1,7 @@
 from fastapi import Request, BackgroundTasks
 from config import app, APIFY_BASE_URL, APIFY_TOKEN
 from Models import ScrapeParamsModel
-from ScrapeManager import ScrapeManager
+from DataManagers.ScrapeManager import ScrapeManager
 import requests
 
 scrape_check_in = None

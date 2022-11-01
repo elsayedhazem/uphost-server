@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+from .DestinationManager import DestinationManager
 from config import APIFY_BASE_URL, APIFY_TOKEN
 
 
@@ -11,6 +12,7 @@ class ScrapeManager():
         self.finished_at = datetime.strptime(
             finished_at, "%Y-%m-%d").timestamp()
         self.data = None
+        self.destination_id = None
 
     @staticmethod
     def static_manage_scrape(db, run_id, dataset_id, finished_at):
@@ -22,6 +24,8 @@ class ScrapeManager():
         self.__store_scrape()
         for listing in self.data:
             self.__process_listing(listing)
+
+        DestinationManager.static_manage_destination(self.__db, self.destination_id, self.finished_at)
 
     def __fetch_scrape(self):
         apify_dataset_url = f"{APIFY_BASE_URL}/datasets/{self.dataset_id}/items"
@@ -116,6 +120,9 @@ class ScrapeManager():
 
         if not self.__db["Listings"].find_one({"_id": listing["id"]}):
             self.__store_new_listing(listing)
+        
+        if not self.destination_id:
+            self.destination_id = self.__db["Listings"].find_one({"_id": listing["id"]})["destinationId"]
 
         listing_features = self.__extract_listing_features(listing)
         timestamp = self.finished_at
