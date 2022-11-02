@@ -56,3 +56,25 @@ async def check_scrape(request: Request, run_id, background_tasks: BackgroundTas
                                   request.app.db, run_id, dataset_id, finished_at)
 
     return payload
+
+
+@app.get("/destinations")
+async def get_destinations(request: Request):
+    docs = request.app.db["Destinations"].find()
+    destinations = []
+    for doc in docs:
+        destination = {}
+        destination["_id"] = str(doc["_id"])
+        destination["lastScraped"] = doc["lastScraped"]
+        destination["features"] = doc["features"]
+        destinations.append(destination)
+
+    return destinations
+
+@app.get("/listings")
+async def get_listings(request: Request, ids: str):
+    if ids:
+        ids = ids.split(",")
+        return [doc for doc in request.app.db["Listings"].find({ "_id": {'$in': ids} }, { "destinationId": 0 })]
+    
+    return [doc for doc in request.app.db["Listings"].find({}, { "destinationId": 0 })]
