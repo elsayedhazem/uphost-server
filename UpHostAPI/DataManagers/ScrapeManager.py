@@ -61,10 +61,10 @@ class ScrapeManager():
         return destinations_collection.insert_one(destination_doc).inserted_id
 
     def __store_new_listing(self, listing):
-        listing_id = listing["id"]
+        listing_id = listing["idStr"]
         listing_doc = {
             "_id": listing_id,
-            "hostId": listing["primaryHost"]["id"],
+            "hostId": str(listing["primaryHost"]["id"]),
         }
 
         destinations_collection = self.__db["Destinations"]
@@ -118,17 +118,17 @@ class ScrapeManager():
 
     def __process_listing(self, listing):
 
-        if not self.__db["Listings"].find_one({"_id": listing["id"]}):
+        if not self.__db["Listings"].find_one({"_id": listing["idStr"]}):
             self.__store_new_listing(listing)
         
         if not self.destination_id:
-            self.destination_id = self.__db["Listings"].find_one({"_id": listing["id"]})["destinationId"]
+            self.destination_id = self.__db["Listings"].find_one({"_id": listing["idStr"]})["destinationId"]
 
         listing_features = self.__extract_listing_features(listing)
         timestamp = self.finished_at
         
         if listing_features["pricing"]:
             self.__db["Listings"].find_one_and_update(
-                {"_id": listing["id"]},
+                {"_id": listing["idStr"]},
                 {'$set': {f"features.{timestamp}": listing_features}}
             )
