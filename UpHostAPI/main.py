@@ -3,6 +3,7 @@ from config import app, APIFY_BASE_URL, APIFY_TOKEN
 from Models import ScrapeParamsModel
 from DataManagers.ScrapeManager import ScrapeManager
 import requests
+from bson import ObjectId
 
 scrape_check_in = None
 scrape_check_out = None
@@ -58,23 +59,39 @@ async def check_scrape(request: Request, run_id, background_tasks: BackgroundTas
     return payload
 
 
-@app.get("/destinations")
-async def get_destinations(request: Request):
+@app.get("/destination-options")
+async def get_destination_options(request: Request):
     docs = request.app.db["Destinations"].find()
-    destinations = []
-    for doc in docs:
-        destination = {}
-        destination["_id"] = str(doc["_id"])
-        destination["lastScraped"] = doc["lastScraped"]
-        destination["features"] = doc["features"]
-        destinations.append(destination)
+    scrapes_collection = request.app.db["Scrapes"]
 
-    return destinations
+    destination_options = {}
+    for doc in docs:
+        timestamp = doc['lastScraped']
+        destination_id = doc['_id']
+        scrape = scrapes_collection.find_one({'timestamp': timestamp})
+        destination_options[scrape['data'][0]['address']] = str(destination_id)
+        print(destination_options)
+    return destination_options
+
+
+@app.get("/destinations/{destination_id}")
+async def get_destination(request: Request, destination_id):
+    doc = request.app.db["Destinations"].find_one(
+        {'_id': ObjectId(destination_id)})
+
+    destination = {}
+    destination["_id"] = str(doc["_id"])
+    destination["lastScraped"] = doc["lastScraped"]
+    destination["features"] = doc["features"][str(
+        int(doc['lastScraped']))]["0"]
+
+    return destination
+
 
 @app.get("/listings")
 async def get_listings(request: Request, ids: str):
     if ids:
         ids = ids.split(",")
-        return [doc for doc in request.app.db["Listings"].find({ "_id": {'$in': ids} }, { "destinationId": 0 })]
-    
-    return [doc for doc in request.app.db["Listings"].find({}, { "destinationId": 0 })]
+        return [doc for doc in request.app.db["Listings"].find({"_id": {'$in': ids}}, {"destinationId": 0})]
+
+    return [doc for doc in request.app.db["Listings"].find({}, {"destinationId": 0})]

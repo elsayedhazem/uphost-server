@@ -25,7 +25,8 @@ class ScrapeManager():
         for listing in self.data:
             self.__process_listing(listing)
 
-        DestinationManager.static_manage_destination(self.__db, self.destination_id, self.finished_at)
+        DestinationManager.static_manage_destination(
+            self.__db, self.destination_id, self.finished_at)
 
     def __fetch_scrape(self):
         apify_dataset_url = f"{APIFY_BASE_URL}/datasets/{self.dataset_id}/items"
@@ -86,7 +87,7 @@ class ScrapeManager():
         listing_features = {}
 
         calendar = listing.get("calendar", None)
-        if calendar:
+        if calendar and listing.get("pricing", None).get("totalPrice", None):
             listing_features["pricing"] = {
                 "checkIn": calendar[0]["date"],
                 "checkOut": calendar[1]["date"],
@@ -94,7 +95,7 @@ class ScrapeManager():
             }
         else:
             listing_features["pricing"] = None
-        
+
         amenities = listing.get("listingAmenities", None)
         if amenities:
             amenities = [a["name"] for a in amenities]
@@ -120,13 +121,14 @@ class ScrapeManager():
 
         if not self.__db["Listings"].find_one({"_id": listing["idStr"]}):
             self.__store_new_listing(listing)
-        
+
         if not self.destination_id:
-            self.destination_id = self.__db["Listings"].find_one({"_id": listing["idStr"]})["destinationId"]
+            self.destination_id = self.__db["Listings"].find_one(
+                {"_id": listing["idStr"]})["destinationId"]
 
         listing_features = self.__extract_listing_features(listing)
         timestamp = self.finished_at
-        
+
         if listing_features["pricing"]:
             self.__db["Listings"].find_one_and_update(
                 {"_id": listing["idStr"]},

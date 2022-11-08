@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from pymongo import MongoClient
 
 load_dotenv()
@@ -11,9 +13,15 @@ APIFY_TOKEN = os.getenv('APIFY_TOKEN')
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 
-print(APIFY_BASE_URL, APIFY_TOKEN)
-
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
