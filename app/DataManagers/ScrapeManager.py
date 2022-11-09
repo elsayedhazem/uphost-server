@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-from DestinationManager import DestinationManager
+from .DestinationManager import DestinationManager
 from ..config import APIFY_BASE_URL, APIFY_TOKEN
 
 
