@@ -1,17 +1,14 @@
-from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from pymongo import MongoClient
 
-load_dotenv()
+APIFY_BASE_URL = os.environ.get("APIFY_BASE_URL")
+APIFY_TOKEN = os.environ.get('APIFY_TOKEN')
 
-APIFY_BASE_URL = os.getenv("APIFY_BASE_URL")
-APIFY_TOKEN = os.getenv('APIFY_TOKEN')
-
-MONGO_URI = os.getenv("MONGO_URI")
-DB_NAME = os.getenv("DB_NAME")
+MONGO_URI = os.environ.get("MONGO_URI")
+DB_NAME = os.environ.get("DB_NAME")
 
 app = FastAPI()
 
