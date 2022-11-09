@@ -1,7 +1,7 @@
 from fastapi import Request, BackgroundTasks
-from app.config import app, APIFY_BASE_URL, APIFY_TOKEN
-from app.Models import ScrapeParamsModel
-from app.DataManagers.ScrapeManager import ScrapeManager
+from .config import app, APIFY_BASE_URL, APIFY_TOKEN
+from .Models import ScrapeParamsModel
+from .DataManagers.ScrapeManager import ScrapeManager
 import requests
 from bson import ObjectId
 
