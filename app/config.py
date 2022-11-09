@@ -24,7 +24,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup_db_client():
     app.mongodb_client = MongoClient(MONGO_URI)
-    app.db = app.mongodb_client[DB_NAME]
+    app.db = app.mongodb_client[str(DB_NAME)]
 
 
 @app.on_event("shutdown")
