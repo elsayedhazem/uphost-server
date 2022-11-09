@@ -3,7 +3,7 @@
 *.json
 *.env
 *.ipynb
-*__init__.py
+__init__.py
 
 /Lib
 /Scripts
